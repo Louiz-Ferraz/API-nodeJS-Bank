@@ -1,5 +1,6 @@
 const conexao = require('../conexao')
-const { validarBodyTransacao } = require('../helpers/helpers')
+const { validarTransacao } = require('../validacoes/helpers')
+const schemaCadastroTransacao = require('../validacoes/schemaCadastroTransacao')
 
 const listarTransacoes = async (req, res) => {
   const { usuario } = req
@@ -100,11 +101,13 @@ const cadastrarTransacao = async (req, res) => {
   const { usuario } = req
   const { descricao, valor, data, categoria_id, tipo } = req.body
 
-  if (!await validarBodyTransacao(req, res)) {
+  if (!await validarTransacao(req, res)) {
     return
   }
 
   try {
+    await schemaCadastroTransacao.validate(req.body);
+
     const query = `
   INSERT INTO transacoes
   (descricao, valor, data, categoria_id, usuario_id, tipo)
@@ -137,11 +140,13 @@ const atualizarTransacao = async (req, res) => {
   const { descricao, valor, data, categoria_id, tipo } = req.body
   const { id } = req.params
 
-  if (!await validarBodyTransacao(req, res)) {
+  if (!await validarTransacao(req, res)) {
     return
   }
 
   try {
+    await schemaCadastroTransacao.validate(req.body);
+
     const query = `UPDATE transacoes SET 
     descricao = $1,
     valor = $2,

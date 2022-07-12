@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express')
 const rotasCategorias = require('./rotas/categorias')
 const rotasTransacoes = require('./rotas/transacoes')

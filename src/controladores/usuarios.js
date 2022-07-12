@@ -1,24 +1,22 @@
 const conexao = require('../conexao');
 const securePassword = require('secure-password');
 const jwt = require('jsonwebtoken');
-const jwtSecret = require('../jwt_secret');
+const jwtSecret = process.env.JWT_SECRET;
 const {
-  validarBodyCadastro,
   validarEmailUnico,
-  validarBodyLogin,
   validarEmailCadastrado
-} = require('../helpers/helpers');
+} = require('../validacoes/helpers');
+const schemaCadastroUsuario = require('../validacoes/schemaCadastroUsuario');
+const schemaLogin = require('../validacoes/schemaLogin');
 
 const pwd = securePassword();
 
 const cadastrar = async (req, res) => {
   const { nome, email, senha } = req.body;
 
-  if (!validarBodyCadastro(req, res)) {
-    return;
-  }
-
   try {
+    await schemaCadastroUsuario.validate(req.body);
+
     const emailUnicoValidado = await validarEmailUnico(email);
     if (emailUnicoValidado !== 'OK') {
       return res
@@ -68,11 +66,9 @@ const cadastrar = async (req, res) => {
 const login = async (req, res) => {
   const { email, senha } = req.body;
 
-  if (!validarBodyLogin(req, res)) {
-    return;
-  }
-
   try {
+    await schemaLogin.validate(req.body);
+
     const emailCadastrado = await validarEmailCadastrado(email);
     if (emailCadastrado !== 'OK') {
       return res
@@ -159,14 +155,12 @@ const detalhar = async (req, res) => {
 const atualizar = async (req, res) => {
   const { nome, email, senha } = req.body;
 
-  if (!validarBodyCadastro(req, res)) {
-    return;
-  }
-
   const { authorization } = req.headers;
   const token = authorization.replace('Bearer ', '').trim();
 
   try {
+    await schemaCadastroUsuario.validate(req.body);
+
     const usuario = jwt.verify(token, jwtSecret);
     const id = usuario.id;
 
